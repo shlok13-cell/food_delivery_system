@@ -29,6 +29,14 @@ Fullstack TypeScript starter using a pnpm monorepo. React + Vite + Tailwind CSS 
 
 ```text
 /
+├── server/                   # Express + TypeScript + MySQL backend
+│   ├── src/
+│   │   ├── db.ts             # mysql2 connection pool
+│   │   └── server.ts         # Express entry point
+│   ├── nodemon.json
+│   ├── tsconfig.json
+│   ├── package.json
+│   └── .env.example
 ├── artifacts/
 │   ├── client/               # React + Vite + Tailwind frontend
 │   │   └── src/
