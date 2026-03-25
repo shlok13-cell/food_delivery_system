@@ -18,6 +18,11 @@ import DeliveryAssignments from "@/pages/delivery/assignments";
 import AssignmentDetail from "@/pages/delivery/assignment-detail";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import OrderTracking from "@/pages/track/order-tracking";
+import AdminLayout from "@/pages/admin/layout";
+import AdminAnalytics from "@/pages/admin/analytics";
+import AdminUsers from "@/pages/admin/users";
+import AdminOrders from "@/pages/admin/orders";
+import AdminRestaurants from "@/pages/admin/restaurants";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +65,21 @@ export default function App() {
               <Route index element={<Navigate to="assignments" replace />} />
               <Route path="assignments" element={<DeliveryAssignments />} />
               <Route path="assignments/:id" element={<AssignmentDetail />} />
+            </Route>
+
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute allowedRoles={["admin"]}>
+                  <AdminLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate to="analytics" replace />} />
+              <Route path="analytics"   element={<AdminAnalytics />}   />
+              <Route path="users"       element={<AdminUsers />}       />
+              <Route path="orders"      element={<AdminOrders />}      />
+              <Route path="restaurants" element={<AdminRestaurants />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
