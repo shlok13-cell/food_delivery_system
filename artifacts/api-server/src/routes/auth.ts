@@ -10,6 +10,7 @@ const seedUsers = [
   { id: 2, name: "Bob Smith",        email: "bob@example.com",        password: "$2b$10$WaXhTyQbYuHn./CcLB1AfenE.f5IHsyzHzN2OgZXWIulNOe9a/NYG", role: "customer" },
   { id: 3, name: "Admin User",       email: "admin@example.com",      password: "$2b$10$WaXhTyQbYuHn./CcLB1AfenE.f5IHsyzHzN2OgZXWIulNOe9a/NYG", role: "admin" },
   { id: 4, name: "Spice Garden",     email: "restaurant@example.com", password: "$2b$10$WaXhTyQbYuHn./CcLB1AfenE.f5IHsyzHzN2OgZXWIulNOe9a/NYG", role: "restaurant" },
+  { id: 5, name: "Raj Delivery",     email: "delivery@example.com",   password: "$2b$10$WaXhTyQbYuHn./CcLB1AfenE.f5IHsyzHzN2OgZXWIulNOe9a/NYG", role: "delivery" },
 ];
 
 let nextId = 100;

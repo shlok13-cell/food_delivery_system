@@ -13,6 +13,9 @@ import NotFound from "@/pages/not-found";
 import DashboardLayout from "@/pages/dashboard/layout";
 import DashboardMenu from "@/pages/dashboard/menu";
 import DashboardOrders from "@/pages/dashboard/orders";
+import DeliveryLayout from "@/pages/delivery/layout";
+import DeliveryAssignments from "@/pages/delivery/assignments";
+import AssignmentDetail from "@/pages/delivery/assignment-detail";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
@@ -42,6 +45,19 @@ export default function App() {
               <Route index element={<Navigate to="menu" replace />} />
               <Route path="menu" element={<DashboardMenu />} />
               <Route path="orders" element={<DashboardOrders />} />
+            </Route>
+
+            <Route
+              path="/delivery"
+              element={
+                <ProtectedRoute allowedRoles={["delivery", "admin"]}>
+                  <DeliveryLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate to="assignments" replace />} />
+              <Route path="assignments" element={<DeliveryAssignments />} />
+              <Route path="assignments/:id" element={<AssignmentDetail />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />

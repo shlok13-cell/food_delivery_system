@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ShoppingCart, MapPin, ReceiptText, LogOut, User, ChefHat } from "lucide-react";
+import { Menu, X, ShoppingCart, MapPin, ReceiptText, LogOut, User, ChefHat, Bike } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import CartDrawer from "@/components/CartDrawer";
 
@@ -106,6 +106,17 @@ export default function Navbar() {
               >
                 <ChefHat className="w-3.5 h-3.5" />
                 Dashboard
+              </Link>
+            )}
+            {(user?.role === "delivery" || user?.role === "admin") && (
+              <Link
+                to="/delivery"
+                className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                  location.pathname.startsWith("/delivery") ? "text-blue-400" : "text-white/70 hover:text-white"
+                }`}
+              >
+                <Bike className="w-3.5 h-3.5" />
+                My Deliveries
               </Link>
             )}
           </div>
@@ -222,6 +233,15 @@ export default function Navbar() {
                     className={`font-medium py-2 flex items-center gap-2 ${location.pathname.startsWith("/dashboard") ? "text-orange-400" : "text-white/80 hover:text-white"}`}
                   >
                     <ChefHat className="w-4 h-4" /> Dashboard
+                  </Link>
+                )}
+                {(user?.role === "delivery" || user?.role === "admin") && (
+                  <Link
+                    to="/delivery"
+                    onClick={() => setMobileOpen(false)}
+                    className={`font-medium py-2 flex items-center gap-2 ${location.pathname.startsWith("/delivery") ? "text-blue-400" : "text-white/80 hover:text-white"}`}
+                  >
+                    <Bike className="w-4 h-4" /> My Deliveries
                   </Link>
                 )}
                 <div className="flex gap-3 pt-2 border-t border-white/10">
