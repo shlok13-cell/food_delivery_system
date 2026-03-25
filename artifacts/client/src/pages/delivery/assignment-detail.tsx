@@ -1,9 +1,11 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Phone, MapPin, Package, Clock, Navigation, CheckCircle2, Bike, Store, ChevronRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, Phone, MapPin, Package, Clock, Navigation, CheckCircle2, Bike, Store, ChevronRight, Radio } from "lucide-react";
 import { toast } from "sonner";
 import api from "@/lib/axios";
 import DeliveryMap from "@/components/DeliveryMap";
+import { getSocket } from "@/lib/socket";
 
 interface Assignment {
   id: number;
@@ -11,8 +13,12 @@ interface Assignment {
   status: "assigned" | "picked_up" | "en_route" | "delivered" | "failed";
   restaurant_name: string;
   restaurant_address: string;
+  restaurant_lat: number;
+  restaurant_lng: number;
   customer_name: string;
   customer_address: string;
+  customer_lat: number;
+  customer_lng: number;
   customer_phone: string;
   total_amount: number;
   distance_km: number;
@@ -48,6 +54,9 @@ export default function AssignmentDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const socketRef = useRef(getSocket());
+  const gpsWatchRef = useRef<number | null>(null);
+  const [isEmitting, setIsEmitting] = useState(false);
 
   const { data: assignment, isLoading } = useQuery({
     queryKey: ["delivery-assignment", id],
@@ -65,6 +74,47 @@ export default function AssignmentDetail() {
     },
     onError: () => toast.error("Failed to update status"),
   });
+
+  useEffect(() => {
+    if (!assignment) return;
+    const isActive = assignment.status === "picked_up" || assignment.status === "en_route";
+    if (!isActive) return;
+
+    const socket = socketRef.current;
+    if (!socket.connected) socket.connect();
+
+    socket.emit("join:delivery", assignment.id);
+    setIsEmitting(true);
+
+    const emitLocation = (lat: number, lng: number) => {
+      socket.emit("location:update", { assignmentId: assignment.id, lat, lng });
+    };
+
+    if ("geolocation" in navigator) {
+      gpsWatchRef.current = navigator.geolocation.watchPosition(
+        (pos) => emitLocation(pos.coords.latitude, pos.coords.longitude),
+        () => {
+          const simInterval = setInterval(() => {
+            const progress = 0.3 + Math.random() * 0.4;
+            const lat = assignment.restaurant_lat + (assignment.customer_lat - assignment.restaurant_lat) * progress;
+            const lng = assignment.restaurant_lng + (assignment.customer_lng - assignment.restaurant_lng) * progress;
+            emitLocation(lat, lng);
+          }, 5000);
+          return () => clearInterval(simInterval);
+        },
+        { enableHighAccuracy: true, maximumAge: 5000 }
+      );
+    }
+
+    return () => {
+      setIsEmitting(false);
+      if (gpsWatchRef.current !== null) {
+        navigator.geolocation.clearWatch(gpsWatchRef.current);
+        gpsWatchRef.current = null;
+      }
+      socket.off("connect");
+    };
+  }, [assignment]);
 
   if (isLoading) {
     return (
@@ -90,6 +140,7 @@ export default function AssignmentDetail() {
   const currentIdx = STATUS_FLOW.findIndex(s => s.status === assignment.status);
   const nextStep = STATUS_FLOW[currentIdx + 1];
   const isComplete = assignment.status === "delivered" || assignment.status === "failed";
+  const isActive = assignment.status === "picked_up" || assignment.status === "en_route";
   const meta = STATUS_META[assignment.status] ?? STATUS_META.assigned;
 
   const timeline = [
@@ -107,13 +158,19 @@ export default function AssignmentDetail() {
         >
           <ArrowLeft size={20} />
         </button>
-        <div>
+        <div className="flex-1">
           <div className="flex items-center gap-2">
             <h1 className="text-white font-bold">Order #{assignment.order_id}</h1>
             <span className={`text-xs font-semibold ${meta.color}`}>{meta.label}</span>
           </div>
           <p className="text-white/30 text-xs">{assignment.distance_km} km · ₹{assignment.earnings} earnings</p>
         </div>
+        {isEmitting && isActive && (
+          <div className="flex items-center gap-1.5 text-xs text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-1 rounded-lg">
+            <Radio size={12} className="animate-pulse" />
+            Live
+          </div>
+        )}
       </div>
 
       <div className="p-6 space-y-4">
@@ -128,6 +185,16 @@ export default function AssignmentDetail() {
             status={assignment.status}
           />
         </div>
+
+        {isActive && (
+          <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-3 flex items-center gap-2">
+            <Radio size={14} className="text-blue-400 animate-pulse shrink-0" />
+            <p className="text-blue-400/90 text-xs">
+              Broadcasting your location live to the customer. Customers can track at{" "}
+              <span className="font-mono text-blue-300">/track/{assignment.order_id}</span>
+            </p>
+          </div>
+        )}
 
         {!isComplete && nextStep && (
           <button

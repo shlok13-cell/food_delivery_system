@@ -17,6 +17,7 @@ import DeliveryLayout from "@/pages/delivery/layout";
 import DeliveryAssignments from "@/pages/delivery/assignments";
 import AssignmentDetail from "@/pages/delivery/assignment-detail";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import OrderTracking from "@/pages/track/order-tracking";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/orders/:id" element={<OrderDetail />} />
+            <Route path="/track/:orderId" element={<OrderTracking />} />
 
             <Route
               path="/dashboard"

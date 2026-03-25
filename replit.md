@@ -27,6 +27,13 @@ All `/api/*` requests from the browser are routed by Replit to `artifacts/api-se
 - **Icons**: Lucide React
 - **HTTP client**: Axios (base URL: `/api`)
 
+### Real-time (`socket.io`)
+- Server: `socket.io` v4 on path `/api/socket.io`, attached to HTTP server wrapping Express
+- Client: `socket.io-client` singleton in `src/lib/socket.ts`
+- Events: `join:track` (customer), `join:delivery` (partner), `location:update` (bidirectional)
+- Server simulation: broadcasts rider lat/lng every 3s for `picked_up` / `en_route` deliveries
+- Customer tracking page: `/track/:orderId` (public, no auth required)
+
 ### API Server (`artifacts/api-server`)
 - **Framework**: Express 5
 - **Runtime**: Node.js TypeScript via esbuild

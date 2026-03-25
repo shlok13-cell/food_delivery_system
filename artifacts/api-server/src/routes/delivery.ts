@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import jwt from "jsonwebtoken";
+import { getIO } from "../socket";
 
 interface JWTUser { id: number; email: string; role: string }
 
@@ -102,6 +103,10 @@ let assignments: DeliveryAssignment[] = [
   },
 ];
 
+export function getAssignments(): DeliveryAssignment[] {
+  return assignments;
+}
+
 const VALID_STATUSES: DeliveryAssignment["status"][] = ["assigned", "picked_up", "en_route", "delivered", "failed"];
 
 const router = Router();
@@ -147,6 +152,20 @@ router.put("/delivery/assignments/:id/status", (req: Request, res: Response) => 
     delivered_at: status === "delivered" && !assignments[idx].delivered_at ? now : assignments[idx].delivered_at,
     eta_minutes: status === "delivered" || status === "failed" ? 0 : assignments[idx].eta_minutes,
   };
+
+  const io = getIO();
+  if (io) {
+    io.to(`order:${assignments[idx].order_id}`).emit("location:update", {
+      lat: status === "delivered" ? assignments[idx].customer_lat : assignments[idx].restaurant_lat,
+      lng: status === "delivered" ? assignments[idx].customer_lng : assignments[idx].restaurant_lng,
+      progress: status === "delivered" ? 1 : 0,
+      status,
+      restaurant_name: assignments[idx].restaurant_name,
+      customer_name: assignments[idx].customer_name,
+      simulated: false,
+    });
+  }
+
   res.json({ data: assignments[idx] });
 });
 
