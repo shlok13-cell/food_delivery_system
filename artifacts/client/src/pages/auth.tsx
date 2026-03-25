@@ -81,7 +81,8 @@ export default function Auth() {
       const { data } = await api.post("/auth/login", { email: loginEmail, password: loginPass });
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      navigate("/");
+      const role = data.user?.role;
+      navigate(role === "restaurant" || role === "admin" ? "/dashboard" : "/");
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Login failed. Please try again.";
       setApiError(msg);
@@ -101,7 +102,8 @@ export default function Auth() {
       });
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      navigate("/");
+      const role = data.user?.role;
+      navigate(role === "restaurant" || role === "admin" ? "/dashboard" : "/");
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Registration failed. Please try again.";
       setApiError(msg);

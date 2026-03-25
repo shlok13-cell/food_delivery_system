@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
 import { CartProvider } from "@/context/CartContext";
@@ -10,6 +10,10 @@ import Checkout from "@/pages/checkout";
 import Orders from "@/pages/orders";
 import OrderDetail from "@/pages/order-detail";
 import NotFound from "@/pages/not-found";
+import DashboardLayout from "@/pages/dashboard/layout";
+import DashboardMenu from "@/pages/dashboard/menu";
+import DashboardOrders from "@/pages/dashboard/orders";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +30,20 @@ export default function App() {
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/orders/:id" element={<OrderDetail />} />
+
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["restaurant", "admin"]}>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate to="menu" replace />} />
+              <Route path="menu" element={<DashboardMenu />} />
+              <Route path="orders" element={<DashboardOrders />} />
+            </Route>
+
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Toaster
