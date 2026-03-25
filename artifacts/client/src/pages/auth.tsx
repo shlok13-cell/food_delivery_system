@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User, Phone, ArrowRight, Loader2, ChevronLeft } from "lucide-react";
+import { toast } from "sonner";
 import api from "@/lib/axios";
 
 type Tab = "login" | "register";
@@ -29,23 +30,23 @@ function InputField({
 
   return (
     <div>
-      <label className="block text-xs font-medium text-white/50 mb-1.5">{label}</label>
-      <div className={`flex items-center gap-3 bg-white/[0.06] border ${error ? "border-red-500/50" : "border-white/10"} rounded-xl px-3.5 py-3 focus-within:border-orange-500/50 focus-within:bg-white/[0.08] transition-all`}>
-        <span className="text-white/30 shrink-0">{icon}</span>
+      <label className="block text-xs font-medium text-muted-foreground mb-1.5">{label}</label>
+      <div className={`flex items-center gap-3 bg-muted/40 border ${error ? "border-destructive/50" : "border-border"} rounded-xl px-3.5 py-3 focus-within:border-orange-500/60 focus-within:bg-muted/60 transition-all`}>
+        <span className="text-muted-foreground shrink-0">{icon}</span>
         <input
           type={isPass && show ? "text" : type}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="flex-1 bg-transparent text-sm text-white placeholder-white/25 outline-none"
+          className="flex-1 bg-transparent text-sm text-foreground placeholder-muted-foreground outline-none"
         />
         {isPass && (
-          <button type="button" onClick={() => setShow(!show)} className="text-white/30 hover:text-white/60 transition-colors">
+          <button type="button" onClick={() => setShow(!show)} className="text-muted-foreground hover:text-foreground transition-colors">
             {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         )}
       </div>
-      {error && <p className="text-xs text-red-400 mt-1">{error}</p>}
+      {error && <p className="text-xs text-destructive mt-1">{error}</p>}
     </div>
   );
 }
@@ -57,11 +58,9 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState("");
 
-  // Login state
   const [loginEmail, setLoginEmail] = useState("");
   const [loginPass, setLoginPass] = useState("");
 
-  // Register state
   const [regName, setRegName] = useState("");
   const [regEmail, setRegEmail] = useState("");
   const [regPhone, setRegPhone] = useState("");
@@ -81,14 +80,18 @@ export default function Auth() {
       const { data } = await api.post("/auth/login", { email: loginEmail, password: loginPass });
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+      toast.success(`Welcome back, ${data.user.name.split(" ")[0]}! 👋`);
       const role = data.user?.role;
-      if (role === "restaurant") navigate("/dashboard");
-      else if (role === "delivery") navigate("/delivery");
-      else if (role === "admin") navigate("/dashboard");
-      else navigate("/");
+      setTimeout(() => {
+        if (role === "restaurant") navigate("/dashboard");
+        else if (role === "delivery") navigate("/delivery");
+        else if (role === "admin") navigate("/dashboard");
+        else navigate("/");
+      }, 400);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Login failed. Please try again.";
       setApiError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -105,23 +108,27 @@ export default function Auth() {
       });
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+      toast.success(`Account created! Welcome to FoodRush, ${data.user.name.split(" ")[0]}! 🎉`);
       const role = data.user?.role;
-      if (role === "restaurant") navigate("/dashboard");
-      else if (role === "delivery") navigate("/delivery");
-      else if (role === "admin") navigate("/dashboard");
-      else navigate("/");
+      setTimeout(() => {
+        if (role === "restaurant") navigate("/dashboard");
+        else if (role === "delivery") navigate("/delivery");
+        else if (role === "admin") navigate("/dashboard");
+        else navigate("/");
+      }, 400);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Registration failed. Please try again.";
       setApiError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="min-h-screen bg-[#0d0d0d] text-white flex overflow-hidden">
-      {/* ── LEFT PANEL ── */}
-      <div className="hidden lg:flex flex-col w-[45%] relative overflow-hidden bg-gradient-to-br from-[#1a0500] via-[#0d0d0d] to-[#0d0500]">
+    <div className="min-h-screen bg-background text-foreground flex overflow-hidden">
+      {/* ── LEFT PANEL (always dark, branded) ── */}
+      <div className="hidden lg:flex flex-col w-[45%] relative overflow-hidden bg-gradient-to-br from-[#1a0500] via-[#110800] to-[#0d0500]">
         <div className="absolute top-0 left-0 w-full h-full">
           <div className="absolute top-1/4 left-1/4 w-80 h-80 bg-orange-600/20 rounded-full blur-3xl" />
           <div className="absolute bottom-1/4 right-1/4 w-60 h-60 bg-red-700/15 rounded-full blur-3xl" />
@@ -142,7 +149,7 @@ export default function Auth() {
             >
               🍜🍕🍔
             </motion.div>
-            <h2 className="text-4xl font-extrabold leading-tight mb-4">
+            <h2 className="text-4xl font-extrabold leading-tight mb-4 text-white">
               Food you love,
               <br />
               <span className="bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">delivered fast.</span>
@@ -170,23 +177,21 @@ export default function Auth() {
       </div>
 
       {/* ── RIGHT PANEL ── */}
-      <div className="flex-1 flex flex-col items-center justify-center p-6 relative">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#111] to-[#0d0d0d]" />
-
+      <div className="flex-1 flex flex-col items-center justify-center p-6 relative bg-background">
         {/* Back link (mobile) */}
         <Link
           to="/"
-          className="lg:hidden absolute top-6 left-6 flex items-center gap-1 text-sm text-white/40 hover:text-white/70 transition-colors"
+          className="lg:hidden absolute top-6 left-6 flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           <ChevronLeft className="w-4 h-4" /> Home
         </Link>
 
         <div className="relative w-full max-w-md">
           {/* Glass card */}
-          <div className="bg-white/[0.04] backdrop-blur-2xl border border-white/[0.08] rounded-3xl p-8 shadow-2xl">
+          <div className="bg-card border border-border rounded-3xl p-8 shadow-xl">
 
             {/* Tab switcher */}
-            <div className="flex bg-white/[0.05] border border-white/[0.08] rounded-2xl p-1 mb-8">
+            <div className="flex bg-muted/50 border border-border rounded-2xl p-1 mb-8">
               {(["login", "register"] as Tab[]).map((t) => (
                 <button
                   key={t}
@@ -194,7 +199,7 @@ export default function Auth() {
                   className={`flex-1 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200 capitalize ${
                     tab === t
                       ? "bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg shadow-orange-500/25"
-                      : "text-white/40 hover:text-white/60"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {t === "login" ? "Sign In" : "Sign Up"}
@@ -214,34 +219,42 @@ export default function Auth() {
                   className="space-y-4"
                 >
                   <div className="mb-6">
-                    <h1 className="text-2xl font-bold">Welcome back 👋</h1>
-                    <p className="text-sm text-white/40 mt-1">Sign in to your FoodRush account</p>
+                    <h1 className="text-2xl font-bold text-foreground">Welcome back 👋</h1>
+                    <p className="text-sm text-muted-foreground mt-1">Sign in to your FoodRush account</p>
                   </div>
 
                   <InputField label="Email address" type="email" value={loginEmail} onChange={setLoginEmail} placeholder="you@example.com" icon={<Mail className="w-4 h-4" />} />
                   <InputField label="Password" type="password" value={loginPass} onChange={setLoginPass} placeholder="••••••••" icon={<Lock className="w-4 h-4" />} />
 
                   <div className="flex justify-end">
-                    <button type="button" className="text-xs text-orange-400 hover:text-orange-300 transition-colors">Forgot password?</button>
+                    <button type="button" className="text-xs text-orange-500 hover:text-orange-400 transition-colors">Forgot password?</button>
                   </div>
 
-                  {apiError && (
-                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-sm text-red-400">
-                      {apiError}
-                    </div>
-                  )}
+                  <AnimatePresence>
+                    {apiError && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        className="bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3 text-sm text-destructive"
+                      >
+                        {apiError}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
                     type="submit"
                     disabled={loading || !loginEmail || !loginPass}
                     className="w-full py-3.5 mt-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25"
                   >
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Sign In <ArrowRight className="w-4 h-4" /></>}
-                  </button>
+                  </motion.button>
 
-                  <p className="text-center text-sm text-white/40">
+                  <p className="text-center text-sm text-muted-foreground">
                     New to FoodRush?{" "}
-                    <button type="button" onClick={() => setTab("register")} className="text-orange-400 hover:text-orange-300 font-medium transition-colors">
+                    <button type="button" onClick={() => setTab("register")} className="text-orange-500 hover:text-orange-400 font-medium transition-colors">
                       Create account
                     </button>
                   </p>
@@ -257,8 +270,8 @@ export default function Auth() {
                   className="space-y-4"
                 >
                   <div className="mb-6">
-                    <h1 className="text-2xl font-bold">Create account 🚀</h1>
-                    <p className="text-sm text-white/40 mt-1">Join FoodRush — your first delivery is free!</p>
+                    <h1 className="text-2xl font-bold text-foreground">Create account 🚀</h1>
+                    <p className="text-sm text-muted-foreground mt-1">Join FoodRush — your first delivery is free!</p>
                   </div>
 
                   <InputField label="Full name" value={regName} onChange={setRegName} placeholder="Alex Johnson" icon={<User className="w-4 h-4" />} />
@@ -268,43 +281,52 @@ export default function Auth() {
 
                   {/* Role selector */}
                   <div>
-                    <label className="block text-xs font-medium text-white/50 mb-2">I'm a</label>
+                    <label className="block text-xs font-medium text-muted-foreground mb-2">I'm a</label>
                     <div className="grid grid-cols-3 gap-2">
                       {roles.map(({ value, label, emoji }) => (
-                        <button
+                        <motion.button
                           key={value}
                           type="button"
+                          whileTap={{ scale: 0.96 }}
                           onClick={() => setRegRole(value)}
                           className={`flex flex-col items-center gap-1 py-3 rounded-xl border text-xs font-medium transition-all ${
                             regRole === value
-                              ? "bg-orange-500/15 border-orange-500/40 text-orange-400"
-                              : "bg-white/[0.03] border-white/[0.08] text-white/40 hover:bg-white/[0.06] hover:text-white/60"
+                              ? "bg-orange-500/15 border-orange-500/40 text-orange-500"
+                              : "bg-muted/30 border-border text-muted-foreground hover:bg-muted/60 hover:text-foreground"
                           }`}
                         >
                           <span className="text-xl">{emoji}</span>
                           {label}
-                        </button>
+                        </motion.button>
                       ))}
                     </div>
                   </div>
 
-                  {apiError && (
-                    <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 text-sm text-red-400">
-                      {apiError}
-                    </div>
-                  )}
+                  <AnimatePresence>
+                    {apiError && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        className="bg-destructive/10 border border-destructive/20 rounded-xl px-4 py-3 text-sm text-destructive"
+                      >
+                        {apiError}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-                  <button
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
                     type="submit"
                     disabled={loading || !regName || !regEmail || !regPhone || !regPass}
                     className="w-full py-3.5 mt-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity flex items-center justify-center gap-2 shadow-lg shadow-orange-500/25"
                   >
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Create Account <ArrowRight className="w-4 h-4" /></>}
-                  </button>
+                  </motion.button>
 
-                  <p className="text-center text-sm text-white/40">
+                  <p className="text-center text-sm text-muted-foreground">
                     Already have an account?{" "}
-                    <button type="button" onClick={() => setTab("login")} className="text-orange-400 hover:text-orange-300 font-medium transition-colors">
+                    <button type="button" onClick={() => setTab("login")} className="text-orange-500 hover:text-orange-400 font-medium transition-colors">
                       Sign in
                     </button>
                   </p>
@@ -313,10 +335,10 @@ export default function Auth() {
             </AnimatePresence>
           </div>
 
-          <p className="text-center text-xs text-white/20 mt-6">
+          <p className="text-center text-xs text-muted-foreground mt-6">
             By continuing, you agree to our{" "}
-            <a href="#" className="underline hover:text-white/40 transition-colors">Terms</a> and{" "}
-            <a href="#" className="underline hover:text-white/40 transition-colors">Privacy Policy</a>
+            <a href="#" className="underline hover:text-foreground transition-colors">Terms</a> and{" "}
+            <a href="#" className="underline hover:text-foreground transition-colors">Privacy Policy</a>
           </p>
         </div>
       </div>

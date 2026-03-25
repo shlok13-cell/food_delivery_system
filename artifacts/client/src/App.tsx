@@ -1,7 +1,9 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "sonner";
+import { AnimatePresence, motion } from "framer-motion";
 import { CartProvider } from "@/context/CartContext";
+import { ThemeProvider, useTheme } from "@/context/ThemeContext";
 import Home from "@/pages/home";
 import Auth from "@/pages/auth";
 import Restaurants from "@/pages/restaurants";
@@ -24,14 +26,37 @@ import AdminUsers from "@/pages/admin/users";
 import AdminOrders from "@/pages/admin/orders";
 import AdminRestaurants from "@/pages/admin/restaurants";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      staleTime: 30_000,
+    },
+  },
+});
 
-export default function App() {
+const pageVariants = {
+  initial: { opacity: 0, y: 6 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.22, ease: "easeOut" as const } },
+  exit:    { opacity: 0, y: -6, transition: { duration: 0.15, ease: "easeIn" as const } },
+};
+
+function AppRoutes() {
+  const location = useLocation();
+  const { theme } = useTheme();
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <CartProvider>
-        <BrowserRouter basename={import.meta.env.BASE_URL}>
-          <Routes>
+    <>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={location.pathname}
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          style={{ minHeight: "100vh" }}
+        >
+          <Routes location={location}>
             <Route path="/" element={<Home />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/restaurants" element={<Restaurants />} />
@@ -84,20 +109,36 @@ export default function App() {
 
             <Route path="*" element={<NotFound />} />
           </Routes>
-          <Toaster
-            position="bottom-center"
-            theme="dark"
-            toastOptions={{
-              style: {
-                background: "#1a1a1a",
-                border: "1px solid rgba(255,255,255,0.1)",
-                color: "#fff",
-                borderRadius: "14px",
-              },
-            }}
-          />
-        </BrowserRouter>
-      </CartProvider>
-    </QueryClientProvider>
+        </motion.div>
+      </AnimatePresence>
+
+      <Toaster
+        position="bottom-right"
+        theme={theme}
+        richColors
+        closeButton
+        toastOptions={{
+          duration: 3000,
+          style: {
+            borderRadius: "14px",
+            fontFamily: "Inter, system-ui, sans-serif",
+          },
+        }}
+      />
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <QueryClientProvider client={queryClient}>
+        <CartProvider>
+          <BrowserRouter basename={import.meta.env.BASE_URL}>
+            <AppRoutes />
+          </BrowserRouter>
+        </CartProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }

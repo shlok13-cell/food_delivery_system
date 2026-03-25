@@ -21,6 +21,27 @@ interface MenuItem {
 
 const GRADIENTS = ["from-orange-600 to-red-700", "from-red-700 to-rose-800", "from-violet-700 to-purple-900", "from-amber-600 to-orange-700", "from-green-700 to-emerald-900", "from-pink-700 to-red-900"];
 
+function MenuSkeleton() {
+  return (
+    <div className="space-y-3 pb-32">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="flex items-start gap-4 bg-card border border-border rounded-2xl p-4">
+          <div className="w-4 h-4 rounded skeleton-shimmer shrink-0 mt-1" />
+          <div className="flex-1 space-y-2">
+            <div className="h-4 skeleton-shimmer rounded-lg w-2/5" />
+            <div className="h-3 skeleton-shimmer rounded-lg w-1/4" />
+            <div className="h-3 skeleton-shimmer rounded-lg w-3/5" />
+          </div>
+          <div className="shrink-0">
+            <div className="w-16 h-16 rounded-xl skeleton-shimmer mb-2" />
+            <div className="h-7 skeleton-shimmer rounded-xl w-16" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export default function RestaurantDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -66,7 +87,7 @@ export default function RestaurantDetail() {
       emoji: item.emoji ?? "🍽️",
     };
     addItem(cartItem);
-    toast.success(`${item.name} added!`, {
+    toast.success(`${item.name} added to cart`, {
       description: `₹${item.price}`,
       duration: 1800,
       icon: item.emoji ?? "🍽️",
@@ -95,7 +116,7 @@ export default function RestaurantDetail() {
   const emoji = restaurant?.emoji ?? "🍽️";
 
   return (
-    <div className="min-h-screen bg-[#0d0d0d] text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* ── HERO ── */}
       <div className={`relative h-64 bg-gradient-to-br ${grad} overflow-hidden`}>
         <div className="absolute inset-0 bg-black/40" />
@@ -109,12 +130,14 @@ export default function RestaurantDetail() {
             {emoji}
           </motion.span>
         </div>
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => navigate(-1)}
           className="absolute top-4 left-4 p-2 bg-black/40 backdrop-blur-sm border border-white/20 rounded-xl hover:bg-black/60 transition-colors"
         >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
+          <ArrowLeft className="w-5 h-5 text-white" />
+        </motion.button>
         {totalItems > 0 && (
           <motion.button
             initial={{ scale: 0 }}
@@ -122,8 +145,8 @@ export default function RestaurantDetail() {
             onClick={() => setCartOpen(true)}
             className="absolute top-4 right-4 p-2 bg-orange-500 rounded-xl shadow-lg shadow-orange-500/30 hover:bg-orange-600 transition-colors"
           >
-            <ShoppingCart className="w-5 h-5" />
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs font-bold flex items-center justify-center">{totalItems}</span>
+            <ShoppingCart className="w-5 h-5 text-white" />
+            <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full text-xs font-bold flex items-center justify-center text-white">{totalItems}</span>
           </motion.button>
         )}
       </div>
@@ -134,27 +157,33 @@ export default function RestaurantDetail() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-5 -mt-8 relative shadow-xl mb-6"
+          className="bg-card border border-border rounded-2xl p-5 -mt-8 relative shadow-xl mb-6"
         >
           {rLoading ? (
-            <div className="animate-pulse space-y-2">
-              <div className="h-6 bg-white/10 rounded w-1/2" />
-              <div className="h-4 bg-white/10 rounded w-1/3" />
+            <div className="space-y-3">
+              <div className="h-7 skeleton-shimmer rounded-lg w-2/5" />
+              <div className="h-4 skeleton-shimmer rounded-lg w-1/4" />
+              <div className="h-3 skeleton-shimmer rounded-lg w-3/5 mt-2" />
+              <div className="flex gap-4 mt-4 pt-4 border-t border-border">
+                <div className="h-4 skeleton-shimmer rounded-lg w-24" />
+                <div className="h-4 skeleton-shimmer rounded-lg w-24" />
+                <div className="h-4 skeleton-shimmer rounded-lg w-20" />
+              </div>
             </div>
           ) : (
             <>
               <div className="flex items-start justify-between">
                 <div>
-                  <h1 className="text-2xl font-extrabold">{restaurant?.name}</h1>
-                  <p className="text-white/50 text-sm mt-0.5">{restaurant?.cuisine_type}</p>
-                  {restaurant?.description && <p className="text-white/40 text-xs mt-2 max-w-lg">{restaurant.description}</p>}
+                  <h1 className="text-2xl font-extrabold text-foreground">{restaurant?.name}</h1>
+                  <p className="text-muted-foreground text-sm mt-0.5">{restaurant?.cuisine_type}</p>
+                  {restaurant?.description && <p className="text-muted-foreground/70 text-xs mt-2 max-w-lg">{restaurant.description}</p>}
                 </div>
                 <div className="flex items-center gap-1 bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-1.5 shrink-0 ml-3">
-                  <Star className="w-4 h-4 text-green-400 fill-green-400" />
-                  <span className="text-sm font-bold text-green-400">{restaurant?.rating}</span>
+                  <Star className="w-4 h-4 text-green-500 fill-green-500" />
+                  <span className="text-sm font-bold text-green-500">{restaurant?.rating}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-4 mt-4 pt-4 border-t border-white/5 text-xs text-white/40">
+              <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border text-xs text-muted-foreground flex-wrap">
                 <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-orange-400" />{restaurant?.delivery_time ?? "30-40"} mins</span>
                 <span className="flex items-center gap-1.5"><ShoppingCart className="w-3.5 h-3.5 text-orange-400" />₹{restaurant?.min_order ?? 149} min order</span>
                 {restaurant?.city && <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-orange-400" />{restaurant.city}</span>}
@@ -165,32 +194,33 @@ export default function RestaurantDetail() {
 
         {/* ── CATEGORY TABS + VEG TOGGLE ── */}
         {!mLoading && (
-          <div className="sticky top-0 z-20 bg-[#0d0d0d]/90 backdrop-blur-xl -mx-4 px-4 py-3 mb-6 border-b border-white/5">
+          <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-xl -mx-4 px-4 py-3 mb-6 border-b border-border">
             <div className="flex items-center gap-3 mb-2">
-              {/* Veg toggle */}
-              <button
+              <motion.button
+                whileTap={{ scale: 0.96 }}
                 onClick={() => setVegOnly(!vegOnly)}
                 className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
                   vegOnly
-                    ? "bg-green-500/15 border-green-500/40 text-green-400"
-                    : "bg-white/[0.04] border-white/10 text-white/40 hover:text-white/60"
+                    ? "bg-green-500/15 border-green-500/40 text-green-500"
+                    : "bg-muted/40 border-border text-muted-foreground hover:text-foreground"
                 }`}
               >
                 <Leaf className="w-3 h-3" /> Veg Only
-              </button>
+              </motion.button>
               <div className="flex gap-2 overflow-x-auto scrollbar-hide flex-1">
                 {categories.map((cat) => (
-                  <button
+                  <motion.button
                     key={cat}
+                    whileTap={{ scale: 0.96 }}
                     onClick={() => scrollTo(cat)}
                     className={`shrink-0 px-4 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 ${
                       activeCategory === cat
                         ? "bg-gradient-to-r from-orange-500 to-red-500 border-transparent text-white shadow-lg shadow-orange-500/20"
-                        : "bg-white/[0.04] border-white/10 text-white/50 hover:text-white hover:bg-white/[0.08]"
+                        : "bg-muted/40 border-border text-muted-foreground hover:text-foreground hover:bg-muted/60"
                     }`}
                   >
                     {cat}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
             </div>
@@ -199,16 +229,12 @@ export default function RestaurantDetail() {
 
         {/* ── MENU ── */}
         {mLoading ? (
-          <div className="space-y-3 pb-32">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-24 bg-white/[0.04] border border-white/[0.06] rounded-2xl animate-pulse" />
-            ))}
-          </div>
+          <MenuSkeleton />
         ) : displayItems.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-4xl mb-3">🌿</p>
-            <p className="text-white/40">No vegetarian items found.</p>
-            <button onClick={() => setVegOnly(false)} className="mt-3 text-sm text-orange-400 hover:text-orange-300 transition-colors">
+            <p className="text-muted-foreground">No vegetarian items found.</p>
+            <button onClick={() => setVegOnly(false)} className="mt-3 text-sm text-orange-500 hover:text-orange-400 transition-colors">
               Show all items
             </button>
           </div>
@@ -216,10 +242,10 @@ export default function RestaurantDetail() {
           <div className="pb-32 space-y-10">
             {categories.map((cat) => (
               <div key={cat} ref={(el) => { categoryRefs.current[cat] = el; }}>
-                <h2 className="text-lg font-bold mb-4 flex items-center gap-2">
+                <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-foreground">
                   <span className="w-1 h-5 bg-gradient-to-b from-orange-500 to-red-500 rounded-full" />
                   {cat}
-                  <span className="text-xs text-white/30 font-normal">({displayItems.filter((m) => m.category === cat).length})</span>
+                  <span className="text-xs text-muted-foreground font-normal">({displayItems.filter((m) => m.category === cat).length})</span>
                 </h2>
                 <div className="space-y-3">
                   {displayItems.filter((m) => m.category === cat).map((item) => {
@@ -230,30 +256,28 @@ export default function RestaurantDetail() {
                         layout
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="flex items-start gap-4 bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.14] rounded-2xl p-4 transition-all duration-200 group"
+                        className="flex items-start gap-4 bg-card border border-border hover:border-border/80 rounded-2xl p-4 transition-all duration-200 group shadow-sm hover:shadow-md"
                       >
-                        {/* Veg/Non-veg indicator */}
                         <span className={`shrink-0 mt-0.5 w-4 h-4 border-2 rounded-sm flex items-center justify-center ${item.is_veg ? "border-green-500" : "border-red-500"}`}>
                           <span className={`w-2 h-2 rounded-full ${item.is_veg ? "bg-green-500" : "bg-red-500"}`} />
                         </span>
 
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                            <span className="text-sm font-semibold">{item.name}</span>
+                            <span className="text-sm font-semibold text-foreground">{item.name}</span>
                             {item.is_bestseller && (
-                              <span className="flex items-center gap-1 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-full px-2 py-0.5">
+                              <span className="flex items-center gap-1 text-xs text-amber-500 bg-amber-500/10 border border-amber-500/20 rounded-full px-2 py-0.5">
                                 <Flame className="w-3 h-3" /> Bestseller
                               </span>
                             )}
                             {item.is_veg && <Leaf className="w-3 h-3 text-green-500 shrink-0" />}
                           </div>
-                          <p className="text-orange-400 font-bold text-sm">₹{item.price}</p>
-                          {item.description && <p className="text-xs text-white/30 mt-1 line-clamp-2">{item.description}</p>}
+                          <p className="text-orange-500 font-bold text-sm">₹{item.price}</p>
+                          {item.description && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.description}</p>}
                         </div>
 
-                        {/* Emoji + Add/Qty button */}
                         <div className="shrink-0 flex flex-col items-center gap-2">
-                          <div className="w-16 h-16 rounded-xl bg-white/5 flex items-center justify-center text-3xl group-hover:scale-105 transition-transform">
+                          <div className="w-16 h-16 rounded-xl bg-muted/50 flex items-center justify-center text-3xl group-hover:scale-105 transition-transform">
                             {item.emoji ?? "🍽️"}
                           </div>
                           <AnimatePresence mode="wait">
@@ -278,18 +302,18 @@ export default function RestaurantDetail() {
                                 className="flex items-center gap-1.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl overflow-hidden shadow-lg shadow-orange-500/20"
                               >
                                 <button onClick={() => setQty(item.id, qty - 1)} className="px-2 py-1.5 hover:bg-black/20 transition-colors">
-                                  <Minus className="w-3 h-3" />
+                                  <Minus className="w-3 h-3 text-white" />
                                 </button>
                                 <motion.span
                                   key={qty}
                                   initial={{ scale: 1.3 }}
                                   animate={{ scale: 1 }}
-                                  className="text-xs font-bold w-4 text-center"
+                                  className="text-xs font-bold w-4 text-center text-white"
                                 >
                                   {qty}
                                 </motion.span>
-                                <button onClick={() => { setQty(item.id, qty + 1); }} className="px-2 py-1.5 hover:bg-black/20 transition-colors">
-                                  <Plus className="w-3 h-3" />
+                                <button onClick={() => setQty(item.id, qty + 1)} className="px-2 py-1.5 hover:bg-black/20 transition-colors">
+                                  <Plus className="w-3 h-3 text-white" />
                                 </button>
                               </motion.div>
                             )}
@@ -318,27 +342,29 @@ export default function RestaurantDetail() {
               initial={{ scale: 0.9, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 10 }}
-              className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+              className="bg-card border border-border rounded-2xl p-6 max-w-sm w-full shadow-2xl"
             >
               <div className="text-3xl mb-3">🔄</div>
-              <h3 className="font-bold text-lg mb-2">Start a new cart?</h3>
-              <p className="text-sm text-white/50 mb-5">
+              <h3 className="font-bold text-lg mb-2 text-foreground">Start a new cart?</h3>
+              <p className="text-sm text-muted-foreground mb-5">
                 Your cart has items from another restaurant. Adding{" "}
-                <span className="text-white font-medium">{pendingItem?.name}</span> will clear your current cart.
+                <span className="text-foreground font-medium">{pendingItem?.name}</span> will clear your current cart.
               </p>
               <div className="flex gap-3">
-                <button
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
                   onClick={() => { setSwitchWarning(false); setPendingItem(null); }}
-                  className="flex-1 py-2.5 border border-white/15 rounded-xl text-sm text-white/70 hover:bg-white/5 transition-colors"
+                  className="flex-1 py-2.5 border border-border rounded-xl text-sm text-foreground/70 hover:bg-muted/50 transition-colors"
                 >
                   Keep current
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
                   onClick={handleStartFresh}
                   className="flex-1 py-2.5 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl text-sm font-bold text-white hover:opacity-90 transition-opacity"
                 >
                   Start fresh
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           </motion.div>

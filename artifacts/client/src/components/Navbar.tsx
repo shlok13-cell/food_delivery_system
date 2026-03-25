@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ShoppingCart, MapPin, ReceiptText, LogOut, User, ChefHat, Bike, Shield } from "lucide-react";
+import { Menu, X, ShoppingCart, MapPin, ReceiptText, LogOut, User, ChefHat, Bike, Shield, Sun, Moon } from "lucide-react";
+import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
+import { useTheme } from "@/context/ThemeContext";
 import CartDrawer from "@/components/CartDrawer";
 
 interface StoredUser {
@@ -20,6 +22,7 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { totalItems } = useCart();
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -41,6 +44,7 @@ export default function Navbar() {
     localStorage.removeItem("user");
     setUser(null);
     setMobileOpen(false);
+    toast.success("Signed out successfully");
     navigate("/");
   }
 
@@ -54,17 +58,17 @@ export default function Navbar() {
     ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
     : "";
 
+  const isScrolledBg = scrolled
+    ? "bg-background/80 backdrop-blur-xl border-b border-border shadow-lg shadow-black/10 dark:shadow-black/30"
+    : "bg-transparent";
+
   return (
     <>
       <motion.nav
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: "easeOut" }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled
-            ? "bg-black/60 backdrop-blur-xl border-b border-white/10 shadow-lg shadow-black/20"
-            : "bg-transparent"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolledBg}`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
           {/* Logo */}
@@ -76,9 +80,9 @@ export default function Navbar() {
           </Link>
 
           {/* Location pill */}
-          <div className="hidden md:flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 cursor-pointer hover:bg-white/10 transition-colors">
+          <div className="hidden md:flex items-center gap-1.5 bg-muted/60 border border-border rounded-full px-3 py-1.5 cursor-pointer hover:bg-muted transition-colors">
             <MapPin className="w-3.5 h-3.5 text-orange-400" />
-            <span className="text-xs text-white/70">Mumbai, MH</span>
+            <span className="text-xs text-foreground/70">Mumbai, MH</span>
           </div>
 
           {/* Nav links */}
@@ -90,7 +94,7 @@ export default function Navbar() {
                 className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
                   location.pathname === to || (to !== "/" && location.pathname.startsWith(to))
                     ? "text-orange-400"
-                    : "text-white/70 hover:text-white"
+                    : "text-foreground/70 hover:text-foreground"
                 }`}
               >
                 {to === "/orders" && <ReceiptText className="w-3.5 h-3.5" />}
@@ -101,7 +105,7 @@ export default function Navbar() {
               <Link
                 to="/dashboard"
                 className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                  location.pathname.startsWith("/dashboard") ? "text-orange-400" : "text-white/70 hover:text-white"
+                  location.pathname.startsWith("/dashboard") ? "text-orange-400" : "text-foreground/70 hover:text-foreground"
                 }`}
               >
                 <ChefHat className="w-3.5 h-3.5" />
@@ -112,7 +116,7 @@ export default function Navbar() {
               <Link
                 to="/delivery"
                 className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                  location.pathname.startsWith("/delivery") ? "text-blue-400" : "text-white/70 hover:text-white"
+                  location.pathname.startsWith("/delivery") ? "text-blue-400" : "text-foreground/70 hover:text-foreground"
                 }`}
               >
                 <Bike className="w-3.5 h-3.5" />
@@ -123,7 +127,7 @@ export default function Navbar() {
               <Link
                 to="/admin"
                 className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                  location.pathname.startsWith("/admin") ? "text-violet-400" : "text-white/70 hover:text-white"
+                  location.pathname.startsWith("/admin") ? "text-violet-400" : "text-foreground/70 hover:text-foreground"
                 }`}
               >
                 <Shield className="w-3.5 h-3.5" />
@@ -133,11 +137,43 @@ export default function Navbar() {
           </div>
 
           {/* Right side */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2">
+            {/* Theme toggle */}
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={toggleTheme}
+              className="p-2 rounded-xl text-foreground/60 hover:text-foreground hover:bg-muted/60 transition-all"
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              <AnimatePresence mode="wait" initial={false}>
+                {theme === "dark" ? (
+                  <motion.div
+                    key="sun"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Sun className="w-4.5 h-4.5" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="moon"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Moon className="w-4.5 h-4.5" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
+
             {/* Cart */}
             <button
               onClick={() => setCartOpen(true)}
-              className="relative p-2 text-white/70 hover:text-white transition-colors"
+              className="relative p-2 text-foreground/70 hover:text-foreground transition-colors"
             >
               <ShoppingCart className="w-5 h-5" />
               <AnimatePresence>
@@ -159,16 +195,16 @@ export default function Navbar() {
               <div className="flex items-center gap-2">
                 <Link
                   to="/orders"
-                  className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full pl-1 pr-3 py-1 hover:bg-white/10 transition-colors"
+                  className="flex items-center gap-2 bg-muted/50 border border-border rounded-full pl-1 pr-3 py-1 hover:bg-muted transition-colors"
                 >
                   <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-xs font-bold text-white">
                     {initials || <User className="w-3.5 h-3.5" />}
                   </div>
-                  <span className="text-sm text-white/80 max-w-[100px] truncate">{user.name.split(" ")[0]}</span>
+                  <span className="text-sm text-foreground/80 max-w-[100px] truncate">{user.name.split(" ")[0]}</span>
                 </Link>
                 <button
                   onClick={handleLogout}
-                  className="p-2 text-white/40 hover:text-red-400 transition-colors"
+                  className="p-2 text-foreground/40 hover:text-red-400 transition-colors"
                   title="Sign out"
                 >
                   <LogOut className="w-4 h-4" />
@@ -176,7 +212,7 @@ export default function Navbar() {
               </div>
             ) : (
               <>
-                <Link to="/auth" className="text-sm text-white/70 hover:text-white font-medium transition-colors">
+                <Link to="/auth" className="text-sm text-foreground/70 hover:text-foreground font-medium transition-colors px-2">
                   Log in
                 </Link>
                 <Link
@@ -189,9 +225,15 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile: cart + menu */}
-          <div className="md:hidden flex items-center gap-2">
-            <button onClick={() => setCartOpen(true)} className="relative p-2 text-white/80">
+          {/* Mobile: cart + theme + menu */}
+          <div className="md:hidden flex items-center gap-1">
+            <button
+              onClick={toggleTheme}
+              className="p-2 text-foreground/60 hover:text-foreground"
+            >
+              {theme === "dark" ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
+            </button>
+            <button onClick={() => setCartOpen(true)} className="relative p-2 text-foreground/80">
               <ShoppingCart className="w-5 h-5" />
               {totalItems > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-orange-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center">
@@ -199,7 +241,7 @@ export default function Navbar() {
                 </span>
               )}
             </button>
-            <button className="text-white/80 hover:text-white" onClick={() => setMobileOpen(!mobileOpen)}>
+            <button className="text-foreground/80 hover:text-foreground p-2" onClick={() => setMobileOpen(!mobileOpen)}>
               {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
@@ -213,17 +255,17 @@ export default function Navbar() {
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="md:hidden overflow-hidden bg-black/80 backdrop-blur-xl border-b border-white/10"
+              className="md:hidden overflow-hidden bg-background/95 backdrop-blur-xl border-b border-border"
             >
               <div className="px-4 py-4 flex flex-col gap-3">
                 {user && (
-                  <div className="flex items-center gap-3 pb-3 border-b border-white/10 mb-1">
+                  <div className="flex items-center gap-3 pb-3 border-b border-border mb-1">
                     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-sm font-bold text-white">
                       {initials || <User className="w-4 h-4" />}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold">{user.name}</p>
-                      <p className="text-xs text-white/40">{user.role}</p>
+                      <p className="text-sm font-semibold text-foreground">{user.name}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
                     </div>
                   </div>
                 )}
@@ -232,7 +274,7 @@ export default function Navbar() {
                     key={to}
                     to={to}
                     onClick={() => setMobileOpen(false)}
-                    className={`font-medium py-2 ${location.pathname === to ? "text-orange-400" : "text-white/80 hover:text-white"}`}
+                    className={`font-medium py-2 ${location.pathname === to ? "text-orange-400" : "text-foreground/80 hover:text-foreground"}`}
                   >
                     {label}
                   </Link>
@@ -241,7 +283,7 @@ export default function Navbar() {
                   <Link
                     to="/dashboard"
                     onClick={() => setMobileOpen(false)}
-                    className={`font-medium py-2 flex items-center gap-2 ${location.pathname.startsWith("/dashboard") ? "text-orange-400" : "text-white/80 hover:text-white"}`}
+                    className={`font-medium py-2 flex items-center gap-2 ${location.pathname.startsWith("/dashboard") ? "text-orange-400" : "text-foreground/80 hover:text-foreground"}`}
                   >
                     <ChefHat className="w-4 h-4" /> Dashboard
                   </Link>
@@ -250,7 +292,7 @@ export default function Navbar() {
                   <Link
                     to="/delivery"
                     onClick={() => setMobileOpen(false)}
-                    className={`font-medium py-2 flex items-center gap-2 ${location.pathname.startsWith("/delivery") ? "text-blue-400" : "text-white/80 hover:text-white"}`}
+                    className={`font-medium py-2 flex items-center gap-2 ${location.pathname.startsWith("/delivery") ? "text-blue-400" : "text-foreground/80 hover:text-foreground"}`}
                   >
                     <Bike className="w-4 h-4" /> My Deliveries
                   </Link>
@@ -259,16 +301,16 @@ export default function Navbar() {
                   <Link
                     to="/admin"
                     onClick={() => setMobileOpen(false)}
-                    className={`font-medium py-2 flex items-center gap-2 ${location.pathname.startsWith("/admin") ? "text-violet-400" : "text-white/80 hover:text-white"}`}
+                    className={`font-medium py-2 flex items-center gap-2 ${location.pathname.startsWith("/admin") ? "text-violet-400" : "text-foreground/80 hover:text-foreground"}`}
                   >
                     <Shield className="w-4 h-4" /> Admin Panel
                   </Link>
                 )}
-                <div className="flex gap-3 pt-2 border-t border-white/10">
+                <div className="flex gap-3 pt-2 border-t border-border">
                   {user ? (
                     <button
                       onClick={handleLogout}
-                      className="flex-1 text-center py-2 border border-red-500/30 rounded-full text-sm text-red-400 hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2"
+                      className="flex-1 text-center py-2.5 border border-red-500/30 rounded-full text-sm text-red-400 hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2"
                     >
                       <LogOut className="w-4 h-4" /> Sign out
                     </button>
@@ -277,14 +319,14 @@ export default function Navbar() {
                       <Link
                         to="/auth"
                         onClick={() => setMobileOpen(false)}
-                        className="flex-1 text-center py-2 border border-white/20 rounded-full text-sm text-white/80"
+                        className="flex-1 text-center py-2.5 border border-border rounded-full text-sm text-foreground/80 hover:bg-muted/50"
                       >
                         Log in
                       </Link>
                       <Link
                         to="/auth?tab=register"
                         onClick={() => setMobileOpen(false)}
-                        className="flex-1 text-center py-2 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-sm font-semibold text-white"
+                        className="flex-1 text-center py-2.5 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-sm font-semibold text-white"
                       >
                         Sign up
                       </Link>
