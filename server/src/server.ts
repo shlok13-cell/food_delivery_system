@@ -8,6 +8,8 @@ import cors from "cors";
 import { testConnection } from "./db.js";
 import authRoutes from "./routes/auth.js";
 import protectedRoutes from "./routes/protected.js";
+import restaurantRoutes from "./routes/restaurants.js";
+import orderRoutes from "./routes/orders.js";
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 3000);
@@ -24,6 +26,8 @@ app.get("/api/health", (_req: Request, res: Response) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/protected", protectedRoutes);
+app.use("/api/restaurants", restaurantRoutes);
+app.use("/api/orders", orderRoutes);
 
 // ─── 404 handler ─────────────────────────────────────────────────────────────
 app.use((_req: Request, res: Response) => {
