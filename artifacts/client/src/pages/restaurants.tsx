@@ -1,5 +1,5 @@
-import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useMemo, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Star, Clock, SlidersHorizontal, ChevronRight } from "lucide-react";
@@ -28,9 +28,20 @@ function SkeletonCard() {
 
 export default function Restaurants() {
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
-  const [cuisine, setCuisine] = useState("All");
+  const [searchParams] = useSearchParams();
+  const [search, setSearch] = useState(() => searchParams.get("search") ?? "");
+  const [cuisine, setCuisine] = useState(() => {
+    const c = searchParams.get("cuisine") ?? "All";
+    return CUISINES.includes(c) ? c : "All";
+  });
   const [sortBy, setSortBy] = useState<"rating" | "time" | "min_order">("rating");
+
+  useEffect(() => {
+    const s = searchParams.get("search") ?? "";
+    const c = searchParams.get("cuisine") ?? "All";
+    setSearch(s);
+    setCuisine(CUISINES.includes(c) ? c : "All");
+  }, [searchParams]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["restaurants"],

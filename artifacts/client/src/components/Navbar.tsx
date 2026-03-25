@@ -1,15 +1,24 @@
 import { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ShoppingCart, MapPin, ReceiptText } from "lucide-react";
+import { Menu, X, ShoppingCart, MapPin, ReceiptText, LogOut, User } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import CartDrawer from "@/components/CartDrawer";
+
+interface StoredUser {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+}
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [cartOpen, setCartOpen] = useState(false);
+  const [user, setUser] = useState<StoredUser | null>(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const { totalItems } = useCart();
 
   useEffect(() => {
@@ -18,11 +27,32 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => {
+    const stored = localStorage.getItem("user");
+    try {
+      setUser(stored ? JSON.parse(stored) : null);
+    } catch {
+      setUser(null);
+    }
+  }, [location.pathname]);
+
+  function handleLogout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    setMobileOpen(false);
+    navigate("/");
+  }
+
   const navLinks = [
     { label: "Home", to: "/" },
     { label: "Restaurants", to: "/restaurants" },
     { label: "My Orders", to: "/orders" },
   ];
+
+  const initials = user?.name
+    ? user.name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase()
+    : "";
 
   return (
     <>
@@ -58,7 +88,7 @@ export default function Navbar() {
                 key={to}
                 to={to}
                 className={`text-sm font-medium transition-colors flex items-center gap-1.5 ${
-                  location.pathname === to || location.pathname.startsWith(to + "/")
+                  location.pathname === to || (to !== "/" && location.pathname.startsWith(to))
                     ? "text-orange-400"
                     : "text-white/70 hover:text-white"
                 }`}
@@ -69,7 +99,7 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* CTA */}
+          {/* Right side */}
           <div className="hidden md:flex items-center gap-3">
             {/* Cart */}
             <button
@@ -92,18 +122,38 @@ export default function Navbar() {
               </AnimatePresence>
             </button>
 
-            <Link
-              to="/auth"
-              className="text-sm text-white/70 hover:text-white font-medium transition-colors"
-            >
-              Log in
-            </Link>
-            <Link
-              to="/auth?tab=register"
-              className="text-sm font-semibold px-4 py-2 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white hover:opacity-90 transition-opacity shadow-lg shadow-orange-500/25"
-            >
-              Sign up
-            </Link>
+            {user ? (
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/orders"
+                  className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full pl-1 pr-3 py-1 hover:bg-white/10 transition-colors"
+                >
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-xs font-bold text-white">
+                    {initials || <User className="w-3.5 h-3.5" />}
+                  </div>
+                  <span className="text-sm text-white/80 max-w-[100px] truncate">{user.name.split(" ")[0]}</span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="p-2 text-white/40 hover:text-red-400 transition-colors"
+                  title="Sign out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              <>
+                <Link to="/auth" className="text-sm text-white/70 hover:text-white font-medium transition-colors">
+                  Log in
+                </Link>
+                <Link
+                  to="/auth?tab=register"
+                  className="text-sm font-semibold px-4 py-2 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white hover:opacity-90 transition-opacity shadow-lg shadow-orange-500/25"
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile: cart + menu */}
@@ -116,10 +166,7 @@ export default function Navbar() {
                 </span>
               )}
             </button>
-            <button
-              className="text-white/80 hover:text-white"
-              onClick={() => setMobileOpen(!mobileOpen)}
-            >
+            <button className="text-white/80 hover:text-white" onClick={() => setMobileOpen(!mobileOpen)}>
               {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
@@ -136,6 +183,17 @@ export default function Navbar() {
               className="md:hidden overflow-hidden bg-black/80 backdrop-blur-xl border-b border-white/10"
             >
               <div className="px-4 py-4 flex flex-col gap-3">
+                {user && (
+                  <div className="flex items-center gap-3 pb-3 border-b border-white/10 mb-1">
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-sm font-bold text-white">
+                      {initials || <User className="w-4 h-4" />}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold">{user.name}</p>
+                      <p className="text-xs text-white/40">{user.role}</p>
+                    </div>
+                  </div>
+                )}
                 {navLinks.map(({ label, to }) => (
                   <Link
                     key={to}
@@ -147,20 +205,31 @@ export default function Navbar() {
                   </Link>
                 ))}
                 <div className="flex gap-3 pt-2 border-t border-white/10">
-                  <Link
-                    to="/auth"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex-1 text-center py-2 border border-white/20 rounded-full text-sm text-white/80"
-                  >
-                    Log in
-                  </Link>
-                  <Link
-                    to="/auth?tab=register"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex-1 text-center py-2 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-sm font-semibold text-white"
-                  >
-                    Sign up
-                  </Link>
+                  {user ? (
+                    <button
+                      onClick={handleLogout}
+                      className="flex-1 text-center py-2 border border-red-500/30 rounded-full text-sm text-red-400 hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2"
+                    >
+                      <LogOut className="w-4 h-4" /> Sign out
+                    </button>
+                  ) : (
+                    <>
+                      <Link
+                        to="/auth"
+                        onClick={() => setMobileOpen(false)}
+                        className="flex-1 text-center py-2 border border-white/20 rounded-full text-sm text-white/80"
+                      >
+                        Log in
+                      </Link>
+                      <Link
+                        to="/auth?tab=register"
+                        onClick={() => setMobileOpen(false)}
+                        className="flex-1 text-center py-2 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-sm font-semibold text-white"
+                      >
+                        Sign up
+                      </Link>
+                    </>
+                  )}
                 </div>
               </div>
             </motion.div>
