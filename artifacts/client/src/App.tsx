@@ -20,6 +20,7 @@ import DeliveryAssignments from "@/pages/delivery/assignments";
 import AssignmentDetail from "@/pages/delivery/assignment-detail";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import OrderTracking from "@/pages/track/order-tracking";
+import Profile from "@/pages/profile";
 import AdminLayout from "@/pages/admin/layout";
 import AdminAnalytics from "@/pages/admin/analytics";
 import AdminUsers from "@/pages/admin/users";
@@ -65,6 +66,7 @@ function AppRoutes() {
             <Route path="/orders" element={<Orders />} />
             <Route path="/orders/:id" element={<OrderDetail />} />
             <Route path="/track/:orderId" element={<OrderTracking />} />
+            <Route path="/profile" element={<Profile />} />
 
             <Route
               path="/dashboard"

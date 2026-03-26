@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, MapPin, FileText, Loader2, CheckCircle2, Package } from "lucide-react";
@@ -13,6 +13,20 @@ export default function Checkout() {
   const { items, restaurantId, restaurantName, totalPrice, clearCart } = useCart();
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
+
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem("user") || "null");
+    if (stored?.address) {
+      setAddress(stored.address);
+      return;
+    }
+    api.get("/auth/me")
+      .then(r => {
+        if (r.data.data?.address) setAddress(r.data.data.address);
+      })
+      .catch(() => {});
+  }, []);
+
   const [step, setStep] = useState<Step>("review");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -222,7 +236,7 @@ export default function Checkout() {
 
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="flex gap-3 flex-wrap justify-center">
               <Link
-                to="/orders"
+                to={`/orders/${orderId}`}
                 className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl text-sm font-semibold text-white hover:opacity-90 shadow-lg shadow-orange-500/25"
               >
                 Track Order

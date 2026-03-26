@@ -194,8 +194,9 @@ export default function Navbar() {
             {user ? (
               <div className="flex items-center gap-2">
                 <Link
-                  to="/orders"
+                  to="/profile"
                   className="flex items-center gap-2 bg-muted/50 border border-border rounded-full pl-1 pr-3 py-1 hover:bg-muted transition-colors"
+                  title="My Profile"
                 >
                   <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-xs font-bold text-white">
                     {initials || <User className="w-3.5 h-3.5" />}
@@ -259,15 +260,19 @@ export default function Navbar() {
             >
               <div className="px-4 py-4 flex flex-col gap-3">
                 {user && (
-                  <div className="flex items-center gap-3 pb-3 border-b border-border mb-1">
+                  <Link
+                    to="/profile"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-3 pb-3 border-b border-border mb-1 hover:opacity-80 transition-opacity"
+                  >
                     <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-sm font-bold text-white">
                       {initials || <User className="w-4 h-4" />}
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground">{user.name}</p>
-                      <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
+                      <p className="text-xs text-muted-foreground capitalize">{user.role} · View Profile</p>
                     </div>
-                  </div>
+                  </Link>
                 )}
                 {navLinks.map(({ label, to }) => (
                   <Link

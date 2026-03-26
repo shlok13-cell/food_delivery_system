@@ -1,0 +1,88 @@
+Act like a senior fullstack engineer debugging and stabilizing an incomplete food delivery system.
+
+The project currently has multiple functional and UX issues. Your job is to FIX them systematically without breaking existing working code.
+
+IMPORTANT:
+- Do NOT rewrite the entire project
+- Only fix and complete missing/broken parts
+- Maintain existing structure
+- Ensure everything works end-to-end
+
+----------------------------------
+ISSUES TO FIX:
+
+1. AUTH & SESSION ISSUES:
+- Fix login flow (wrong credentials refresh issue)
+- Prevent showing "Sign In" when user is already logged in
+- Persist login using JWT/localStorage
+- Add proper logout functionality
+
+2. CUSTOMER PROFILE:
+- Create customer profile page
+- Add default address field
+- Allow updating address
+- Ensure address is used in orders
+
+3. RESTAURANT ISSUES:
+- Fix "Add restaurant" not reflecting in list
+- Ensure API re-fetch after adding
+- Fix restaurant listing UI
+
+4. MENU & CART:
+- Fix "Can't add item"
+- Ensure cart state works properly
+- Add quantity update/remove item
+- Show total price correctly
+
+5. ORDER SYSTEM:
+- Fix order placement flow
+- Ensure orders are saved in database
+- Create "My Orders" page
+
+6. ORDER TRACKING:
+- Add basic tracking system:
+  - Order status (placed, preparing, out for delivery, delivered)
+- Add simple tracking UI (no need real GPS yet)
+- Prepare structure for map integration later
+
+7. DELIVERY PARTNER:
+- Create delivery dashboard
+- Show assigned orders
+- Allow status update
+
+8. ADMIN DASHBOARD:
+- Fix admin panel:
+  - Show users
+  - Show orders
+  - Show restaurants
+- Add basic analytics (counts)
+
+9. NAVIGATION & UX:
+- Add back buttons where missing
+- Fix routing issues
+- Separate:
+   - Logged-in user view
+   - Guest user view
+- After login → redirect to restaurant page
+
+10. UI IMPROVEMENTS:
+- Add loading states
+- Add error messages
+- Ensure responsive layout
+
+----------------------------------
+
+FINAL GOAL:
+- User can login → browse restaurants → add to cart → place order → track order
+- Restaurant can manage menu
+- Delivery partner can see orders
+- Admin can see everything
+
+----------------------------------
+
+WORK STEP-BY-STEP:
+1. Fix backend APIs first
+2. Then fix frontend integration
+3. Then improve UI/UX
+
+At the end, ensure app runs without errors.

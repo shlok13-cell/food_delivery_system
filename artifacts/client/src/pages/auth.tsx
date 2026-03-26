@@ -68,6 +68,16 @@ export default function Auth() {
   const [regRole, setRegRole] = useState<Role>("customer");
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    if (token && user) {
+      if (user.role === "restaurant" || user.role === "admin") navigate("/dashboard", { replace: true });
+      else if (user.role === "delivery") navigate("/delivery", { replace: true });
+      else navigate("/restaurants", { replace: true });
+    }
+  }, [navigate]);
+
+  useEffect(() => {
     setApiError("");
   }, [tab]);
 
@@ -85,8 +95,8 @@ export default function Auth() {
       setTimeout(() => {
         if (role === "restaurant") navigate("/dashboard");
         else if (role === "delivery") navigate("/delivery");
-        else if (role === "admin") navigate("/dashboard");
-        else navigate("/");
+        else if (role === "admin") navigate("/admin");
+        else navigate("/restaurants");
       }, 400);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Login failed. Please try again.";
@@ -113,8 +123,8 @@ export default function Auth() {
       setTimeout(() => {
         if (role === "restaurant") navigate("/dashboard");
         else if (role === "delivery") navigate("/delivery");
-        else if (role === "admin") navigate("/dashboard");
-        else navigate("/");
+        else if (role === "admin") navigate("/admin");
+        else navigate("/restaurants");
       }, 400);
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Registration failed. Please try again.";

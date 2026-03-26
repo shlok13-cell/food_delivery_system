@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import jwt from "jsonwebtoken";
 import { seedRestaurants, seedMenuItems, type SeedMenuItem } from "../seeds";
+import { getOrderStore } from "./orders";
 
 interface JWTUser { id: number; email: string; role: string }
 
@@ -149,22 +150,46 @@ router.get("/dashboard/orders", (req: Request, res: Response) => {
   const user = requireRestaurant(req, res);
   if (!user) return;
   const restaurantId = user.role === "admin" ? 1 : (restaurantOwners[user.id] ?? 1);
-  const orders = dashboardOrders
+
+  const realOrders: DashboardOrder[] = getOrderStore()
     .filter(o => o.restaurant_id === restaurantId)
+    .map(o => ({
+      id: o.id,
+      restaurant_id: o.restaurant_id,
+      customer_name: o.user_name,
+      customer_email: o.user_email,
+      delivery_address: o.delivery_address,
+      total_amount: o.total_amount,
+      status: o.status,
+      created_at: o.created_at,
+      items: o.items.map(i => ({ name: i.item_name, quantity: i.quantity, unit_price: i.unit_price })),
+    }));
+
+  const allOrders = [...realOrders, ...dashboardOrders.filter(o => o.restaurant_id === restaurantId)]
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-  res.json({ data: orders });
+
+  res.json({ data: allOrders });
 });
 
 router.put("/dashboard/orders/:id/status", (req: Request, res: Response) => {
   const user = requireRestaurant(req, res);
   if (!user) return;
   const restaurantId = user.role === "admin" ? 1 : (restaurantOwners[user.id] ?? 1);
-  const order = dashboardOrders.find(o => o.id === Number(req.params.id) && o.restaurant_id === restaurantId);
-  if (!order) { res.status(404).json({ error: "Order not found" }); return; }
   const { status } = req.body ?? {};
   if (!orderStatuses.includes(status)) {
     res.status(400).json({ error: `Invalid status. Must be one of: ${orderStatuses.join(", ")}` }); return;
   }
+  const orderId = Number(req.params.id);
+
+  const realOrder = getOrderStore().find(o => o.id === orderId && o.restaurant_id === restaurantId);
+  if (realOrder) {
+    realOrder.status = status;
+    res.json({ data: { ...realOrder, customer_name: realOrder.user_name, customer_email: realOrder.user_email } });
+    return;
+  }
+
+  const order = dashboardOrders.find(o => o.id === orderId && o.restaurant_id === restaurantId);
+  if (!order) { res.status(404).json({ error: "Order not found" }); return; }
   order.status = status;
   res.json({ data: order });
 });

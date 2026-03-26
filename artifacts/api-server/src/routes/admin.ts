@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from "express";
 import jwt from "jsonwebtoken";
 import { seedRestaurants } from "../seeds";
 import { getAssignments } from "./delivery";
+import { getOrderStore } from "./orders";
 
 interface JWTUser { id: number; email: string; role: string }
 
@@ -99,7 +100,17 @@ router.patch("/admin/users/:id/status", (req: Request, res: Response) => {
 
 router.get("/admin/orders", (req: Request, res: Response) => {
   if (!requireAdmin(req, res)) return;
-  res.json({ data: allOrders });
+  const realOrders = getOrderStore().map(o => ({
+    id: o.id,
+    restaurant: o.restaurant_name,
+    customer: o.user_name,
+    amount: o.total_amount,
+    status: o.status,
+    created_at: o.created_at,
+  }));
+  const combined = [...realOrders, ...allOrders]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  res.json({ data: combined });
 });
 
 router.get("/admin/restaurants", (req: Request, res: Response) => {
